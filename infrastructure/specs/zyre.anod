@@ -24,7 +24,8 @@ class Zyre(spec('github')):
                     'BUILD_SHARED_LIBS': 'OFF',
                     'BUILD_TESTING': 'OFF',
                     'CZMQ_INCLUDE_DIRS': self.deps['czmq'].include_dir,
-                    'LIBZMQ_INCLUDE_DIRS': self.deps['zeromq'].include_dir},
+                    'LIBZMQ_INCLUDE_DIRS': self.deps['zeromq'].include_dir,
+                    'CMAKE_C_FLAGS': '-fPIE'},
             make_target='zyre',
             enable_install=False)
         mkdir(self.lib_dir)

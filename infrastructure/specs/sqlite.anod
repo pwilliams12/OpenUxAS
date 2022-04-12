@@ -32,7 +32,7 @@ class Sqlite(spec('common')):
         configure.add('--enable-static=yes')
 
         make = Make(self)
-        make.set_var('CFLAGS', '-O2 -g -DSQLITE_ENABLE_COLUMN_METADATA')
+        make.set_var('CFLAGS', '-O2 -g -DSQLITE_ENABLE_COLUMN_METADATA -fPIE')
 
         configure()
         make()

@@ -21,7 +21,8 @@ class CZMQ(spec('github')):
         self.cmake_build(
             params={'LIBZMQ_INCLUDE_DIRS': self.deps['zeromq'].include_dir,
                     'BUILD_SHARED_LIBS': 'OFF',
-                    'BUILD_TESTING': 'OFF'})
+                    'BUILD_TESTING': 'OFF',
+                    'CMAKE_C_FLAGS': '-fPIE'})
 
         #    make_target='czmq',
         #    enable_install=False)
