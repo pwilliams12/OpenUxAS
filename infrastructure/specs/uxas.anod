@@ -19,7 +19,8 @@ class Uxas(spec('common')):
             Anod.Dependency('zyre'),
             Anod.Dependency('sqlite'),
             Anod.Dependency('boost'),  # remove for system-wide boost
-            Anod.Dependency('sqlitecpp')]
+            Anod.Dependency('sqlitecpp'),
+            Anod.Dependency('googletest')]
 
     @property
     def build_source_list(self):
@@ -64,6 +65,7 @@ class Uxas(spec('common')):
         self.deps['boost'].setenv()  # remove for system-wide boost
         self.deps['sqlitecpp'].setenv()
         self.deps['czmq'].setenv()
+        self.deps['googletest'].setenv()
 
     @Anod.primitive()
     def build(self):

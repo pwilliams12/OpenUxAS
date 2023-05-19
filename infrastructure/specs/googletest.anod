@@ -1,0 +1,22 @@
+from e3.anod.loader import spec
+from e3.anod.spec import Anod
+from e3.fs import cp, mkdir
+import os
+
+
+class GoogleTest(spec('github')):
+
+    @property
+    def build_deps(self):
+        return [Anod.Dependency('compiler'),
+                Anod.Dependency('cmake')]
+
+    github_project = 'googletest'
+
+    @Anod.primitive()
+    def build(self):
+        self.cmake_build(params={
+            'BUILD_GMOCK': 'OFF',
+            'INSTALL_GTEST': 'lib'})
+        mkdir(self.lib_dir)
+        cp(os.path.join(self['BUILD_DIR'], 'lib/*.a'), self.lib_dir)

@@ -14,6 +14,7 @@
                 "${workspaceFolder}/infrastructure/sbx/x86_64-linux/serial/install/include",
                 "${workspaceFolder}/infrastructure/sbx/x86_64-linux/pugixml/install/include",
                 "${workspaceFolder}/infrastructure/sbx/x86_64-linux/cppzmq/install/include",
+                "${workspaceFolder}/infrastructure/sbx/x86_64-linux/googletest/install/include",
                 "${workspaceFolder}/infrastructure/sbx/x86_64-linux/zeromq/install/include"
             ],
             "defines": [],
