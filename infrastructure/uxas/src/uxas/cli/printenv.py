@@ -57,6 +57,20 @@ def do_printenv(m: Main, set_prog: bool = True) -> int:
         action="store_true",
         default=False,
     )
+
+    m.argument_parser.add_argument(
+        "--lib-path",
+        help="print LIBRARY_PATH definition only",
+        action="store_true",
+        default=False,
+    )
+
+    m.argument_parser.add_argument(
+        "--cplus-include-path",
+        help="print CPLUS_INCLUDE_PATH definition only",
+        action="store_true",
+        default=False,
+    )
     m.parse_args()
 
     # Disable logging messages except errors
@@ -85,20 +99,29 @@ def do_printenv(m: Main, set_prog: bool = True) -> int:
         if hasattr(anod_instance, "setenv"):
             anod_instance.setenv()
 
-    for var, value in os.environ.items():
-        if var not in saved_env or saved_env[var] != os.environ[var]:
-            if m.args.inline:
-                print('%s="%s"' % (var, value), end=" ")
-            else:
-                print('export %s="%s";' % (var, value))
+    if m.args.lib_path:
+        value = os.environ.get('LIBRARY_PATH')
+        print('%s' % (";".join(value.split(':'))), end=" ")
 
-                if m.args.verbose >= 1:
-                    print('printf "I set %s=\\"%s\\"\\n\\n";' % (var, value))
+    elif m.args.cplus_include_path:
+        value = os.environ.get('CPLUS_INCLUDE_PATH')
+        print('%s' % (";".join(value.split(':'))), end=" ")
 
-                print(" ")
+    else:
+        for var, value in os.environ.items():
+            if var not in saved_env or saved_env[var] != os.environ[var]:
+                if m.args.inline:
+                    print('%s="%s"' % (var, value), end=" ")
+                else:
+                    print('export %s="%s";' % (var, value))
 
-    if not m.args.inline:
-        print(BANNER % m.args.spec_name)
+                    if m.args.verbose >= 1:
+                        print('printf "I set %s=\\"%s\\"\\n\\n";' % (var, value))
+
+                    print(" ")
+
+        if not m.args.inline:
+            print(BANNER % m.args.spec_name)
 
     return 0
 

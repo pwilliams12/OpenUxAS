@@ -3,16 +3,6 @@ set(TARGET_NAME uxas)
 project("${TARGET_NAME}")
 include(GNUInstallDirs)
 
-# Specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Set specific compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -g")
-
 set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/cpp)
 set(SRC_FILES
     ${SOURCE_DIR}/VisilibityLib/visilibity.cpp
@@ -119,55 +109,127 @@ set(SRC_FILES
     ${SOURCE_DIR}/Tasks/TaskManagerService.cpp
     ${SOURCE_DIR}/Tasks/TaskServiceBase.cpp
     ${SOURCE_DIR}/Tasks/TaskTrackerService.cpp
-    ${SOURCE_DIR}/Utilities/Algebra.cpp
-    ${SOURCE_DIR}/Utilities/CallbackTimer.cpp
-    ${SOURCE_DIR}/Utilities/FileSystemUtilities.cpp
-    ${SOURCE_DIR}/Utilities/FlatEarth.cpp
-    ${SOURCE_DIR}/Utilities/Permute.cpp
-    ${SOURCE_DIR}/Utilities/RouteExtension.cpp
-    ${SOURCE_DIR}/Utilities/SensorSteering.cpp
-    ${SOURCE_DIR}/Utilities/TimeUtilities.cpp
-    ${SOURCE_DIR}/Utilities/UnitConversions.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_ConfigurationManager.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_ConsoleLogger.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_DatabaseLogger.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_DatabaseLoggerHelper.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_FileLogger.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_HeadLogDataDatabaseLogger.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_LogManager.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_SentinelSerialBuffer.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_Time.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_TimerManager.cpp
-    ${SOURCE_DIR}/Utilities/UxAS_ZeroMQ.cpp
 )
+
+# Add ANOD dev environment
+message("Creating anod dependency")
+message("${SRC_FILES}")
+execute_process(COMMAND ./anod printenv uxas --build-env --lib-path
+    OUTPUT_VARIABLE AnodEnv_LibPath
+    WORKING_DIRECTORY "./"
+    ECHO_OUTPUT_VARIABLE ${AnodEnv_LibPath}
+)
+execute_process(COMMAND ./anod printenv uxas --build-env --cplus-include-path
+    OUTPUT_VARIABLE AnodEnv_IncludePath
+    WORKING_DIRECTORY "./"
+    ECHO_OUTPUT_VARIABLE ${AnodEnv_IncludePath}
+)
+# # message("Here's the output = ${AnodEnvFileVar}")
+# # execute_process(COMMAND ${AnodEnvFileVar}
+# execute_process(COMMAND source "AnodEnvFile.out"
+#     COMMAND env
+#     WORKING_DIRECTORY "./"
+#     COMMAND_ECHO STDOUT
+# )
+
+
+# Create intermediate file as CMake messes up 
+if(DEFINED SKIP_ANOD_SETUP)
+    message("Skipping anod setup")
+else()
+    # message("Creating anod dependency")
+    # execute_process(COMMAND NO_INSTALL_VENV=1 ./anod printenv uxas --build-env
+    #     OUTPUT_VARIABLE AnodEnvFileVar
+    #     WORKING_DIRECTORY "./"
+    #     COMMAND_ECHO STDOUT
+    # )
+    # message("Here's the output = ${AnodEnvFileVar}")
+    # execute_process(COMMAND eval "${AnodEnvFileVar}"
+    #     WORKING_DIRECTORY "./"
+    #     COMMAND_ECHO STDOUT
+    # )
+    # add_custom_command(OUTPUT AnodEnvFile.out
+    #     COMMAND NO_INSTALL_VENV=1 ./anod printenv uxas --build-env > AnodEnvFile.out
+    #     WORKING_DIRECTORY "../")
+    # add_custom_target(AnodEnv ALL 
+    #     COMMAND eval "$(cat AnodEnvFile.out)"
+    #     WORKING_DIRECTORY "../"
+    #     DEPENDS AnodEnvFile.out)
+endif()
+
+# Define common functionality to all libraries
+function(commonSetup TARGET_NAME)
+    # Setup anod environment if not already setup
+    if (NOT SKIP_ANOD_SETUP)
+        message("Adding AnodEnv dependency within FUNCTION***")
+        # add_dependencies(${TARGET_NAME} AnodEnv)
+    else()
+        message("Not expected to be here... ${SKIP_ANOD_SETUP}")
+    endif()
+
+    # Set specific compiler flags
+    target_compile_options(${TARGET_NAME} PRIVATE
+        "-fPIC"
+        $<$<CONFIG:DEBUG>:-Og>
+    )
+
+    # Set optional compiler flags
+    if(ENABLE_WARNINGS)
+        target_compile_options(${TARGET_NAME} PRIVATE -Wall)
+    endif()
+    if(ENABLE_COVERAGE)
+        target_compile_options(${TARGET_NAME} PRIVATE 
+            -fprofile-arcs 
+            -ftest-coverage
+        )
+        target_compile_definitions(${TARGET_NAME} PRIVATE GCOV_MODE=1)
+    endif()
+
+    # Specify the C++ standard to use
+    set_target_properties(${TARGET_NAME} PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+endfunction()
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/cpp/Utilities)
 
 # Create binary
 add_executable(${TARGET_NAME} ${SOURCE_DIR}/UxAS_Main.cpp ${SRC_FILES})
+# if(SKIP_ANOD_SETUP)
+#     message(DEBUG "Skipping anod setup")
+# else()
+#     add_dependencies(${TARGET_NAME} AnodEnv)
+# endif()
 
-# TODO: Replace these manual directories with conan or something from anod
-set(SBX_DIR ${PROJECT_SOURCE_DIR}/infrastructure/sbx/x86_64-linux)
-set(LMCP_DIR ${SBX_DIR}/uxas-lmcp-cpp/install)
-set(PUGIXML_DIR ${SBX_DIR}/pugixml/install )
-set(ZEROMQ_DIR ${SBX_DIR}/zeromq/install)
-set(CPPZMQ_DIR ${SBX_DIR}/cppzmq/install)
-set(CZMQ_DIR ${SBX_DIR}/czmq/install)
-set(ZYRE_DIR ${SBX_DIR}/zyre/install)
-set(SQLITECPP_DIR ${SBX_DIR}/sqlitecpp/install)
-set(SQLITE_DIR ${SBX_DIR}/sqlite/install)
-set(SERIAL_DIR ${SBX_DIR}/serial/install)
-set(BOOST_DIR ${SBX_DIR}/boost/install)
+# Set specific compiler flags
+target_compile_options(${TARGET_NAME} PUBLIC
+    "-fPIC"
+    $<$<CONFIG:DEBUG>:-Og>
+)
+if(ENABLE_WARNINGS)
+    target_compile_options(${TARGET_NAME} PUBLIC -Wall)
+endif()
+if(ENABLE_COVERAGE)
+    target_compile_options(${TARGET_NAME} PUBLIC -fprofile-arcs -ftest-coverage)
+    target_compile_definitions(${TARGET_NAME} PUBLIC GCOV_MODE=1)
+endif()
+
+# Specify the C++ standard to use
+set_target_properties(${TARGET_NAME} PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+)
+
+target_link_options(${TARGET_NAME} PUBLIC
+    -static-libgcc
+    -static-libstdc++
+)
 
 target_include_directories(${TARGET_NAME} PUBLIC
-    ${LMCP_DIR}/include       # Could I push this to conan.io ?
-    ${PUGIXML_DIR}/include    # Could conanize
-    ${ZEROMQ_DIR}/include     # Could conanize
-    ${CZMQ_DIR}/include       # Could conanize
-    ${CPPZMQ_DIR}/include     # Could conanize
-    ${SQLITECPP_DIR}/include  # Could conanize
-    ${SQLITE_DIR}/include     # Could conanize
-    ${SERIAL_DIR}/include     # Could conanize
-    ${ZYRE_DIR}/include       # Could conanize
-    ${BOOST_DIR}/include      # Could conanize
+    ${AnodEnv_LibPath}
     ${SOURCE_DIR}/Communications/ZeroMq/Proxy
     ${SOURCE_DIR}/Communications/ZeroMq/Receivers
     ${SOURCE_DIR}/Communications/ZeroMq/Senders
@@ -181,21 +243,26 @@ target_include_directories(${TARGET_NAME} PUBLIC
     ${SOURCE_DIR}/Tasks/
     ${SOURCE_DIR}/Utilities/
     ${SOURCE_DIR}/VisilibityLib/
-    ${PROJECT_SOURCE_DIR}/resources/AutomationDiagramDataService  # TODO: Review need for this cludge!
+    ${PROJECT_SOURCE_DIR}/resources/AutomationDiagramDataService # TODO: Review need for this.
 )
-target_link_directories( ${TARGET_NAME} PUBLIC
-    ${LMCP_DIR}/lib
-    ${PUGIXML_DIR}/lib
-    ${ZEROMQ_DIR}/lib
-    ${CZMQ_DIR}/lib
-    ${SQLITE_DIR}/lib
-    ${SQLITECPP_DIR}/lib
-    ${SERIAL_DIR}/lib
-    ${ZYRE_DIR}/lib
-    ${BOOST_DIR}/lib
-    )
-target_link_libraries(${TARGET_NAME} lmcp zyre pugixml SQLiteCpp sqlite3 czmq serial libzmq.a
-    boost_filesystem boost_regex uuid)
+target_link_directories(${TARGET_NAME} PUBLIC
+    ${AnodEnv_LibPath}
+    $ENV{LIBRARY_PATH}
+)
+target_link_libraries(${TARGET_NAME} 
+    UxasUtilities
+    lmcp 
+    zyre 
+    pugixml 
+    SQLiteCpp 
+    sqlite3 
+    czmq 
+    serial 
+    libzmq.a
+    boost_filesystem 
+    boost_regex 
+    uuid
+)
 
 # Create install target
 install(TARGETS ${TARGET_NAME})

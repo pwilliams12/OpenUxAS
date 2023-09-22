@@ -56,6 +56,7 @@ message("Here's the include path = $ENV{CPLUS_INCLUDE_PATH}")
 
 target_include_directories(${TARGET_NAME} PUBLIC
     ${AnodEnv_IncludePath}
+    $ENV{CPLUS_INCLUDE_PATH}
     ${PROJECT_SOURCE_DIR}/
     ${PROJECT_SOURCE_DIR}/../Includes/    
     ${PROJECT_SOURCE_DIR}/../Plans/
