@@ -11,7 +11,7 @@ czmq:
   url: https://github.com/zeromq/czmq.git
   vcs: git
 googletest:
-  revision: v1.13.0
+  revision: v1.8.1
   url: https://github.com/google/googletest.git
   vcs: git
 libzmq:
