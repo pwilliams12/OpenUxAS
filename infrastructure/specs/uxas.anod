@@ -73,10 +73,11 @@ class Uxas(spec('common')):
         self.log.info('LIBRARY_PATH: %s', os.environ['LIBRARY_PATH'])
         # We don't want CMake to autoconfigure the build environment
         # using anod when CMake is invoked by anod.
-        cmakeParams = {'SKIP_ANOD_SETUP' : True}
+        cmakeParams = {}
+        # cmakeParams = {'SKIP_ANOD_SETUP' : True}
         if self.scenario == 'gcov':
             cmakeParams['ENABLE_COVERAGE'] = True
-            cmakeParams['DEBUG_BUILD'] = True
+            # cmakeParams['DEBUG_BUILD'] = True
 
         self.cmake_build(enable_install=False, params=cmakeParams) 
         
