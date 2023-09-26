@@ -101,11 +101,11 @@ def do_printenv(m: Main, set_prog: bool = True) -> int:
 
     if m.args.lib_path:
         value = os.environ.get('LIBRARY_PATH')
-        print('%s' % (";".join(value.split(':'))), end=" ")
+        print('%s' % (";".join(value.split(':'))), end="")
 
     elif m.args.cplus_include_path:
         value = os.environ.get('CPLUS_INCLUDE_PATH')
-        print('%s' % (";".join(value.split(':'))), end=" ")
+        print('%s' % (";".join(value.split(':'))), end="")
 
     else:
         for var, value in os.environ.items():
