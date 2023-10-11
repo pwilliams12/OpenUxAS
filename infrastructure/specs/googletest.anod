@@ -17,6 +17,7 @@ class GoogleTest(spec('github')):
     def build(self):
         self.cmake_build(params={
             'BUILD_GMOCK': 'OFF',
-            'INSTALL_GTEST': 'lib'})
+            'INSTALL_GTEST': 'lib',
+            'CMAKE_CXX_FLAGS': '-Wno-error=maybe-uninitialized'})
         mkdir(self.lib_dir)
-        cp(os.path.join(self['BUILD_DIR'], 'lib/*.a'), self.lib_dir)
+        # cp(os.path.join(self['BUILD_DIR'], 'lib/*.a'), self.lib_dir)

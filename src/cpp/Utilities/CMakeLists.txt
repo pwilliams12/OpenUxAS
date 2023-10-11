@@ -42,7 +42,8 @@ target_include_directories(${TARGET_NAME} PUBLIC
 if (${UNIT_TEST})
     add_executable("TimeTest" ${PROJECT_SOURCE_DIR}/unitTests/UxAS_Time_Test.cpp)
     target_include_directories("TimeTest" PUBLIC ${PROJECT_SOURCE_DIR}/unitTests/)
-    target_link_libraries("TimeTest" PUBLIC ${TARGET_NAME})
+    target_link_directories("TimeTest" PUBLIC ${AnodEnv_LibPath})
+    target_link_libraries("TimeTest" PUBLIC ${TARGET_NAME} gtest gtest_main)
     set_target_properties("TimeTest" PROPERTIES
         CXX_STANDARD 11
         CXX_STANDARD_REQUIRED ON

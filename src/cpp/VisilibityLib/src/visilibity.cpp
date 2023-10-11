@@ -1724,6 +1724,7 @@ bool Polygon::offset_polygons(std::vector<Polygon> &polygonList, std::vector<Pol
         if (!Polygon::boost_union(polygonList, simpleMerge, epsilon))
             return false;
         for (n = 0; n < simpleMerge.size(); n++)
+            // CPW: The following line EXCLUDES interior rings!!
             if (simpleMerge[n].area() > fabs(epsilon))
                 resultingPolygons.push_back(simpleMerge[n]);
         return true;
@@ -4028,12 +4029,17 @@ void snap_near(std::vector<boost_polygon> &polygonList, double epsilon)
                 if (boost::geometry::distance(polygonList[idx1], polygonList[idx2]) > 0 &&
                     boost::geometry::distance(polygonList[idx1], polygonList[idx2]) < epsilon)
                 {
+                    // CPW: Here we convert a single boost_polygon into a std::vector<Polygon>... if multiple
+                    //      values, then there were inner rings but Polygon has no concept of outer/inner.
                     auto poly1 = to_visiLibity(polygonList[idx1]);
                     auto poly2 = to_visiLibity(polygonList[idx2]);
 
                     // for each point in outer ring of poly1 (ignore inner rings)
+                    // CPW: Here only outer ring is being considered!!!
                     for (int pointIdx = 0; pointIdx < poly1[0].n(); pointIdx++)
                     {
+                        // CPW: Implicit conversion here for poly2 (std::vector<Polygon>) to Environment type
+                        //      which DOES account for holes!
                         if (boundary_distance(poly1[0][pointIdx], poly2) < epsilon)
                         {
                             // attempt to snap point to boundary of poly2
@@ -4042,8 +4048,11 @@ void snap_near(std::vector<boost_polygon> &polygonList, double epsilon)
                         }
                     }
 
+                    // CPW: Here only outer ring is being considered!!!
                     for (int pointIdx = 0; pointIdx < poly2[0].n(); pointIdx++)
                     {
+                        // CPW: Implicit conversion here for poly2 (std::vector<Polygon>) to Environment type
+                        //      which DOES account for holes!
                         if (boundary_distance(poly2[0][pointIdx], poly1) < epsilon)
                         {
                             // attempt to snap point to boundary of poly2
@@ -4096,6 +4105,7 @@ bool Polygon::boost_union(std::vector<Polygon> &polygonList, std::vector<Polygon
     // convert polygon list from visiLibity to boost
     for (auto &visPoly : polygonList)
     {
+        // CPW: This converts a single Polygon to boost_polygon, so no inner rings...
         auto b_poly = to_boost(std::vector<Polygon>(1, visPoly));
         if (boost::geometry::is_valid(b_poly, failure))
         {
@@ -4108,6 +4118,8 @@ bool Polygon::boost_union(std::vector<Polygon> &polygonList, std::vector<Polygon
     }
 
     // if any points are near, but not adjacent, snap them together
+    // CPW: Entering this function none of the boost_polygons should have any inner rings due to the way they
+    //      were converted above.
     snap_near(bPolyList, epsilon);
     auto overlapping = find_overlap(bPolyList);
     std::vector<std::pair<int, int>> tangent;
@@ -4157,6 +4169,7 @@ bool Polygon::boost_union(std::vector<Polygon> &polygonList, std::vector<Polygon
     for (auto &bPoly : bPolyList)
     {
         auto visPoly = to_visiLibity(bPoly);
+        // CPW: I agree with below statement... how does this get used by the rest of the system!?
         // visPoly may include inner rings
         for (auto vPoly : visPoly)
         {

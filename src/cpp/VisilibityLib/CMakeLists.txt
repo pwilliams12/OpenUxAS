@@ -20,3 +20,15 @@ target_include_directories(${TARGET_NAME} PUBLIC
     # "$<TARGET_PROPERTY:UxasServices,INTERFACE_INCLUDE_DIRECTORIES>"
 )
 
+if (${UNIT_TEST})
+    set(TEST_NAME "VisilibityTest")
+    add_executable(${TEST_NAME} ${PROJECT_SOURCE_DIR}/unitTests/Visilibity_Test.cpp)
+    target_include_directories(${TEST_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/unitTests/)
+    target_link_directories(${TEST_NAME} PUBLIC ${AnodEnv_LibPath})
+    target_link_libraries(${TEST_NAME} PUBLIC ${TARGET_NAME} gtest gtest_main)
+    set_target_properties(${TEST_NAME} PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+)
+endif()

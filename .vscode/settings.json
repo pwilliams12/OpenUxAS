@@ -8,5 +8,6 @@
         "**/.hg/store/**": true,
         "**/sbx/**": true,
         "**/software/**": true,
-    }
+    },
+    "cmake.configureOnOpen": false
 }
